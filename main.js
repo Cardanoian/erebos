@@ -104,15 +104,19 @@ addEventListener('keydown',function(e){
 addEventListener('keyup',function(e){ keys[e.key.toLowerCase()]=false; });
 function down(){ return keys['arrowleft']||keys['a']||keys['q']; }
 function up(){ return false; }
-function right(){ return keys['arrowright']||keys['d']; }
-function left(){ return keys['arrowleft']||keys['a']; }
-function jumpHeld(){ return keys['z']||keys['k']||keys[' ']; }
-function jumpPressed(){ return pressed['z']||pressed['k']||pressed[' ']; }
-function dashPressed(){ return pressed['x']||pressed['l']||pressed['shift']; }
-function atkPressed(){ return pressed['j']||pressed['f']; }
-function interactPressed(){ return pressed['e']||pressed['arrowup']||pressed['w']; }
-function confirmPressed(){ return pressed['enter']||pressed[' ']||pressed['z']; }
-function clearPressed(){ pressed={}; }
+// 터치 입력 상태 (모바일 가상 컨트롤러)
+var touchMove=0; // -1..1 (가상 조이스틱 좌우)
+var touchHeld={}; // jump/dash/atk/inter (누름 유지)
+var touchPressed={}; // 눌린 순간 1프레임
+function right(){ return keys['arrowright']||keys['d']||touchMove>0.3; }
+function left(){ return keys['arrowleft']||keys['a']||touchMove<-0.3; }
+function jumpHeld(){ return keys['z']||keys['k']||keys[' ']||touchHeld.jump; }
+function jumpPressed(){ return pressed['z']||pressed['k']||pressed[' ']||touchPressed.jump; }
+function dashPressed(){ return pressed['x']||pressed['l']||pressed['shift']||touchPressed.dash; }
+function atkPressed(){ return pressed['j']||pressed['f']||touchPressed.atk; }
+function interactPressed(){ return pressed['e']||pressed['arrowup']||pressed['w']||touchPressed.inter; }
+function confirmPressed(){ return pressed['enter']||pressed[' ']||pressed['z']||touchPressed.confirm; }
+function clearPressed(){ pressed={}; touchPressed={}; }
 
 // ---------- audio (itch.io 파일 + 신스 폴백) ----------
 var BGM_SRC={title:'assets/bgm/title.mp3',stage:'assets/bgm/stage.mp3',boss:'assets/bgm/boss.mp3'};
@@ -829,6 +833,10 @@ function update(dt){
   G.time+=dt;
   AudioSys.update(dt);
   if(G.toastT>0)G.toastT-=dt;
+  // 세로 모드(모바일)에서는 플레이 일시정지 + 회전 안내
+  if(typeof document!=='undefined'&&document.body&&document.body.classList.contains('touch')&&document.body.classList.contains('portrait')){
+    if(G.scene==='play'){ clearPressed(); return; }
+  }
   // 파티클/플로트 항상
   for(var i=parts.length-1;i>=0;i--){ var q=parts[i]; q.t-=dt; q.x+=q.vx*dt; q.y+=q.vy*dt; q.vy+=300*dt; if(q.t<=0)parts.splice(i,1); }
   for(var j=floats.length-1;j>=0;j--){ var fl=floats[j]; fl.t-=dt; fl.y-=20*dt; if(fl.t<=0)floats.splice(j,1); }
@@ -979,6 +987,44 @@ function wrapText(text,x,y,maxW,lh){
   ctx.fillText(line,x,yy);
 }
 
+// ---------- touch controls (모바일 가상 조이스틱 + 버튼) ----------
+function setupTouch(){
+  try{
+    if(typeof document==='undefined'||!document.body) return;
+    var isTouch=('ontouchstart' in window)||(typeof navigator!=='undefined'&&navigator.maxTouchPoints>0);
+    if(!isTouch) return;
+    document.body.classList.add('touch');
+    try{ var hs=document.querySelector('#help span'); if(hs)hs.textContent='좌측 스틱 이동 · JUMP 점프 · DASH 대시 · ATK 공격 · E 조사 · II 일시정지'; }catch(e0){}
+    var stick=document.getElementById('stick'), knob=document.getElementById('knob');
+    var sid=null, cx0=0;
+    function setKnob(dx){ if(knob)knob.style.transform='translate('+dx+'px,0)'; }
+    function handle(t){ var dx=t.clientX-cx0, mx=40; dx=clamp(dx,-mx,mx); setKnob(dx); touchMove=Math.abs(dx)<8?0:dx/mx; }
+    if(stick){
+      stick.addEventListener('touchstart',function(e){ e.preventDefault(); var t=e.changedTouches[0]; sid=t.identifier; var r=stick.getBoundingClientRect(); cx0=r.left+r.width/2; handle(t); AudioSys.unlock(); },{passive:false});
+      stick.addEventListener('touchmove',function(e){ e.preventDefault(); for(var i=0;i<e.changedTouches.length;i++){ var t=e.changedTouches[i]; if(t.identifier===sid)handle(t); } },{passive:false});
+      var end=function(e){ for(var j=0;j<e.changedTouches.length;j++){ if(e.changedTouches[j].identifier===sid){ sid=null; setKnob(0); touchMove=0; } } };
+      stick.addEventListener('touchend',end); stick.addEventListener('touchcancel',end);
+    }
+    [['btnJump','jump'],['btnDash','dash'],['btnAtk','atk'],['btnE','inter']].forEach(function(b){
+      var el=document.getElementById(b[0]); if(!el)return;
+      el.addEventListener('touchstart',function(e){ e.preventDefault(); touchHeld[b[1]]=true; touchPressed[b[1]]=true; if(b[1]==='inter')touchPressed.confirm=true; AudioSys.unlock(); },{passive:false});
+      var off=function(e){ e.preventDefault(); touchHeld[b[1]]=false; };
+      el.addEventListener('touchend',off); el.addEventListener('touchcancel',off);
+    });
+    var bp=document.getElementById('btnPause');
+    if(bp)bp.addEventListener('touchstart',function(e){ e.preventDefault(); pressed['escape']=true; },{passive:false});
+    // 가로 고정 시도 (전체화면이 아니면 거부될 수 있음 → 세로 안내 오버레이로 보완)
+    try{ if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){}); }catch(e){}
+    document.addEventListener('touchstart',function(){
+      try{ if(screen.orientation&&screen.orientation.lock)screen.orientation.lock('landscape').catch(function(){}); }catch(e2){}
+    },{once:true});
+    // 캔버스 탭 = 확인 (타이틀/대화/엔딩 진행)
+    if(canvas)canvas.addEventListener('touchstart',function(){ touchPressed.confirm=true; AudioSys.unlock(); },{passive:true});
+    function checkOri(){ try{ document.body.classList.toggle('portrait',window.innerHeight>window.innerWidth); }catch(e){} }
+    addEventListener('resize',checkOri); addEventListener('orientationchange',checkOri); checkOri();
+  }catch(e){}
+}
+
 // ---------- main loop (고정스텝) ----------
 var last=0,acc=0,STEP=1/60,fpsN=0,fpsT=0;
 function frame(ts){
@@ -996,5 +1042,6 @@ buildLevel();
 resetPlayer(5*TILE,28*TILE-30);
 spawnFoes();
 G.cam.x=0; G.cam.y=LV.h*TILE-VH;
+setupTouch();
 requestAnimationFrame(frame);
 })();
