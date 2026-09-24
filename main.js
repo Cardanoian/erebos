@@ -1,6 +1,6 @@
 'use strict';
 /* EREBOS — 잊힌 성소 : 1스테이지 메트로베니아 (바닐라 Canvas)
- * 조작: 이동 ←→/AD, 점프 Z/K/Space, 대시 X/L/Shift, 공격 J, 조사 E/↑, Esc 일시정지, M 음소거
+ * 조작: 이동 ←→/AD, 점프 Z, 대시 X, 공격 C, 조사 V, Esc 일시정지, M 음소거
  * itch.io 에셋 교체 지점: drawTile/drawPlayer/drawEnemy/drawBoss + AudioSys (주석 참고)
  */
 (function(){
@@ -110,11 +110,11 @@ var touchHeld={}; // jump/dash/atk/inter (누름 유지)
 var touchPressed={}; // 눌린 순간 1프레임
 function right(){ return keys['arrowright']||keys['d']||touchMove>0.3; }
 function left(){ return keys['arrowleft']||keys['a']||touchMove<-0.3; }
-function jumpHeld(){ return keys['z']||keys['k']||keys[' ']||touchHeld.jump; }
-function jumpPressed(){ return pressed['z']||pressed['k']||pressed[' ']||touchPressed.jump; }
-function dashPressed(){ return pressed['x']||pressed['l']||pressed['shift']||touchPressed.dash; }
-function atkPressed(){ return pressed['j']||pressed['f']||touchPressed.atk; }
-function interactPressed(){ return pressed['e']||pressed['arrowup']||pressed['w']||touchPressed.inter; }
+function jumpHeld(){ return keys['z']||touchHeld.jump; }
+function jumpPressed(){ return pressed['z']||touchPressed.jump; }
+function dashPressed(){ return pressed['x']||touchPressed.dash; }
+function atkPressed(){ return pressed['c']||touchPressed.atk; }
+function interactPressed(){ return pressed['v']||touchPressed.inter; }
 function confirmPressed(){ return pressed['enter']||pressed[' ']||pressed['z']||touchPressed.confirm; }
 function clearPressed(){ pressed={}; touchPressed={}; }
 
@@ -252,7 +252,7 @@ function buildLevel(){
   ];
   LV.signs=[
     {x:5*TILE,y:GY*TILE-26,w:14,h:22,text:'[벽화] 순례자들이 종을 향해 걸어간다.'},
-    {x:12*TILE,y:GY*TILE-26,w:14,h:22,text:'조작: ←→ 이동, Z 점프, J 공격, E 조사'},
+    {x:12*TILE,y:GY*TILE-26,w:14,h:22,text:'조작: ←→ 이동, Z 점프, X 대시, C 공격, V 조사'},
     {x:36*TILE,y:GY*TILE-26,w:14,h:22,text:'앞은 무너진 갱도. 무언가 제단이 보인다…'},
     {x:60*TILE,y:GY*TILE-40,w:14,h:22,text:'[균열벽] X 대시로 부술 수 있을 것 같다.'},
     {x:78*TILE,y:GY*TILE-26,w:14,h:22,text:'침수 회랑. 벽을 오르는 힘이 필요하다.'},
@@ -508,7 +508,7 @@ function checkInteract(){
   if(interactPressed()&&nearTarget){
     var o=nearTarget.o;
     if(nearTarget.kind==='sign'){ G.dialog=o.text; AudioSys.sfx('lever'); }
-    else if(nearTarget.kind==='dash'){ o.taken=true; player.hasDash=true; AudioSys.sfx('altar'); G.dialog='망자의 돌진 획득! [X/Shift] 대시 — 균열벽을 부술 수 있다.'; burst(o.x+10,o.y+10,20,'#7df9ff',120); }
+    else if(nearTarget.kind==='dash'){ o.taken=true; player.hasDash=true; AudioSys.sfx('altar'); G.dialog='망자의 돌진 획득! [X] 대시 — 균열벽을 부술 수 있다.'; burst(o.x+10,o.y+10,20,'#7df9ff',120); }
     else if(nearTarget.kind==='wall'){ o.taken=true; player.hasWall=true; AudioSys.sfx('altar'); G.dialog='가고일 손톱 획득! 벽에 붙어 [점프]로 벽점프.'; burst(o.x+10,o.y+10,20,'#9fb2ff',120); }
     else if(nearTarget.kind==='lever'){ o.used=true; door.open=true; AudioSys.sfx('door'); G.dialog='문이 열렸다. 종탑 하층으로.'; burst(door.x+8,door.y+40,16,'#fd6',100); }
     else if(nearTarget.kind==='bell'){ player.hp=player.maxhp; player.respawnX=o.x-4; player.respawnY=o.y-2; o.lit=true; AudioSys.sfx('bell'); G.dialog='종이 울린다. 체력 회복 + 리스폰 저장.'; burst(o.x+8,o.y,12,'#ffe9a3',90); }
@@ -816,7 +816,7 @@ function drawHUD(){
   // 보스바
   if(boss&&!boss.dead){ ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(VW/2-100,12,200,12); ctx.fillStyle='#5a0f1f'; ctx.fillRect(VW/2-98,14,196,8); ctx.fillStyle='#e33'; ctx.fillRect(VW/2-98,14,196*clamp(boss.hp/boss.maxhp,0,1),8); ctx.fillStyle='#fff'; ctx.font='9px monospace'; ctx.textAlign='center'; ctx.fillText('타락한 종지기',VW/2,22); ctx.textAlign='left'; }
   // 상호작용 힌트
-  if(nearTarget&&G.scene==='play'&&!G.dialog){ ctx.fillStyle='#ffe9a3'; ctx.font='10px monospace'; ctx.textAlign='center'; ctx.fillText('[E] 조사',VW/2,VH-30); ctx.textAlign='left'; }
+  if(nearTarget&&G.scene==='play'&&!G.dialog){ ctx.fillStyle='#ffe9a3'; ctx.font='10px monospace'; ctx.textAlign='center'; ctx.fillText('[V] 조사',VW/2,VH-30); ctx.textAlign='left'; }
 }
 
 // ---------- scenes ----------
@@ -849,7 +849,7 @@ function update(dt){
     AudioSys.setBGM('title');
     if(assetsLoaded&&confirmPressed()){ startGame(); }
   }else if(G.scene==='intro'){
-    if(confirmPressed()){ G.introStep++; if(G.introStep>=INTRO.length){ G.scene='play'; AudioSys.setBGM('stage'); G.dialog='←→ 이동, Z 점프, J 공격. E로 조사.'; } }
+    if(confirmPressed()){ G.introStep++; if(G.introStep>=INTRO.length){ G.scene='play'; AudioSys.setBGM('stage'); G.dialog='←→ 이동, Z 점프, X 대시, C 공격. V로 조사.'; } }
   }else if(G.scene==='play'){
     G.playTime+=dt;
     if(G.hitstop>0){ G.hitstop-=dt; clearPressed(); return; }
@@ -901,7 +901,7 @@ function render(){
       ctx.fillText('PRESS ENTER',VW/2,170);
     }
     ctx.fillStyle='#8b8fa8'; ctx.font='9px monospace';
-    ctx.fillText('이동 ←→ · 점프 Z · 대시 X · 공격 J · 조사 E',VW/2,200);
+    ctx.fillText('이동 ←→ · 점프 Z · 대시 X · 공격 C · 조사 V',VW/2,200);
     ctx.fillText('대시 + 벽점프 해금 · 정식보스 포함 (10~15분)',VW/2,214);
     if(G.best) ctx.fillText('BEST '+G.best.time+'s / DEATH '+G.best.deaths,VW/2,230);
     ctx.textAlign='left';
