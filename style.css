@@ -1,24 +1,177 @@
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{background:#07070d;color:#cfd2e0;font-family:"Courier New",monospace;display:flex;align-items:center;justify-content:center;padding:10px;min-height:100vh}
-#wrap{width:min(984px,96vw,calc((100vh - 80px)*16/9));min-width:280px}
-#frame{position:relative;border:2px solid #2b2b45;border-radius:8px;overflow:hidden;background:#000;box-shadow:0 0 60px #000,0 0 24px #1a1a35}
-canvas{width:100%;height:auto;display:block;aspect-ratio:16/9;image-rendering:pixelated;image-rendering:crisp-edges;background:#0a0a14}
-#overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;pointer-events:none;padding:24px}
-#help{display:flex;justify-content:space-between;gap:12px;margin-top:10px;font-size:12px;color:#8b8fa8;flex-wrap:wrap}
-#fps{color:#565b76}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  background: #07070d;
+  color: #cfd2e0;
+  font-family: 'Courier New', monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  min-height: 100vh;
+}
+#wrap {
+  width: min(984px, 96vw, calc((100vh - 80px) * 16 / 9));
+  min-width: 280px;
+}
+#frame {
+  position: relative;
+  border: 2px solid #2b2b45;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000;
+  box-shadow:
+    0 0 60px #000,
+    0 0 24px #1a1a35;
+}
+canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 16/9;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: #0a0a14;
+}
+#overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  padding: 24px;
+}
+#help {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: #8b8fa8;
+  flex-wrap: wrap;
+}
+#fps {
+  color: #565b76;
+}
 /* ---- touch controls (터치 기기에서만 표시) ---- */
-#touchUI{display:none}
-body.touch #touchUI{display:block;position:absolute;inset:0;pointer-events:none;z-index:5}
-#stick{position:absolute;left:18px;bottom:18px;width:112px;height:112px;border-radius:50%;background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.28);pointer-events:auto;touch-action:none}
-#knob{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;background:rgba(255,255,255,.32)}
-#touchBtns{position:absolute;right:14px;bottom:14px;display:flex;gap:10px;align-items:flex-end;pointer-events:auto}
-.tbtn{width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.10);border:2px solid rgba(255,255,255,.30);color:#e8ecff;font-size:12px;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none}
-.tbtn.big{width:74px;height:74px;font-size:13px;background:rgba(125,249,255,.12);border-color:rgba(125,249,255,.45)}
-.tbtn.small{width:52px;height:52px;font-size:11px}
-.tbtn:active{background:rgba(255,255,255,.30)}
-#btnPause{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:8px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none}
+#touchUI {
+  display: none;
+}
+body.touch #touchUI {
+  display: block;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+#stick {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  pointer-events: auto;
+  touch-action: none;
+}
+#knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 48px;
+  height: 48px;
+  margin: -24px 0 0 -24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.32);
+}
+#touchBtns {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  pointer-events: auto;
+}
+.tbtn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: #e8ecff;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.tbtn.big {
+  width: 74px;
+  height: 74px;
+  font-size: 13px;
+  background: rgba(125, 249, 255, 0.12);
+  border-color: rgba(125, 249, 255, 0.45);
+}
+.tbtn.small {
+  width: 52px;
+  height: 52px;
+  font-size: 11px;
+}
+.tbtn:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+#btnPause {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
 /* ---- 세로 모드 회전 안내 (터치+세로일 때만) ---- */
-#rotateNotice{display:none}
-body.touch.portrait #rotateNotice{display:flex;position:absolute;inset:0;background:rgba(4,4,12,.92);z-index:10;align-items:center;justify-content:center;text-align:center;font-size:16px;line-height:1.8;color:#ffe9a3;pointer-events:auto}
-body.touch.portrait #rotateNotice span{font-size:12px;color:#8b8fa8}
+#rotateNotice {
+  display: none;
+}
+body.touch.portrait #rotateNotice {
+  display: flex;
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 4, 12, 0.92);
+  z-index: 10;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #ffe9a3;
+  pointer-events: auto;
+}
+body.touch.portrait #rotateNotice span {
+  font-size: 12px;
+  color: #8b8fa8;
+}

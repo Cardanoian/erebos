@@ -1,33 +1,45 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>EREBOS — 잊힌 성소 (1스테이지 메트로베니아)</title>
-<link rel="stylesheet" href="style.css?v=2">
-</head>
-<body>
-<div id="wrap">
-  <div id="frame">
-    <canvas id="game" width="480" height="270"></canvas>
-    <div id="touchUI">
-      <div id="stick"><div id="knob"></div></div>
-      <div id="touchBtns">
-        <div class="tbtn small" id="btnE">E</div>
-        <div class="tbtn small" id="btnDash">DASH</div>
-        <div class="tbtn" id="btnAtk">ATK</div>
-        <div class="tbtn big" id="btnJump">JUMP</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>EREBOS — 잊힌 성소 (1스테이지 메트로베니아)</title>
+    <link rel="stylesheet" href="style.css?v=2" />
+  </head>
+  <body>
+    <div id="wrap">
+      <div id="frame">
+        <canvas id="game" width="480" height="270"></canvas>
+        <div id="touchUI">
+          <div id="stick"><div id="knob"></div></div>
+          <div id="touchBtns">
+            <div class="tbtn small" id="btnE">E</div>
+            <div class="tbtn small" id="btnDash">DASH</div>
+            <div class="tbtn" id="btnAtk">ATK</div>
+            <div class="tbtn big" id="btnJump">JUMP</div>
+          </div>
+          <div id="btnPause">II</div>
+        </div>
+        <div id="rotateNotice">
+          <div>
+            화면을 가로로 돌려주세요<br /><span
+              >Please rotate to landscape</span
+            >
+          </div>
+        </div>
+        <div id="overlay"></div>
       </div>
-      <div id="btnPause">II</div>
+      <div id="help">
+        <span
+          >이동 ←→/AD · 점프 Z · 대시 X · 공격 C · 조사 V · 일시정지 Esc ·
+          음소거 M</span
+        >
+        <span id="fps"></span>
+      </div>
     </div>
-    <div id="rotateNotice"><div>화면을 가로로 돌려주세요<br><span>Please rotate to landscape</span></div></div>
-    <div id="overlay"></div>
-  </div>
-  <div id="help">
-    <span>이동 ←→/AD · 점프 Z · 대시 X · 공격 C · 조사 V · 일시정지 Esc · 음소거 M</span>
-    <span id="fps"></span>
-  </div>
-</div>
-<script src="main.js?v=3"></script>
-</body>
+    <script src="main.js?v=3"></script>
+  </body>
 </html>
